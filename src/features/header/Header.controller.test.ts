@@ -49,4 +49,15 @@ describe('HeaderController', () => {
 
     expect(controller.title).toBe('Your books: —');
   });
+
+  it('recovers from a failed first load after a book is added', async () => {
+    const { gateway, repository, controller } = setup();
+    gateway.get.mockRejectedValueOnce(new Error('HTTP 502 for /private'));
+    await controller.init();
+    expect(controller.title).toBe('Your books: —');
+
+    await repository.addBook({ name: 'Mine', author: 'Me' });
+
+    expect(controller.title).toBe('Your books: 2');
+  });
 });

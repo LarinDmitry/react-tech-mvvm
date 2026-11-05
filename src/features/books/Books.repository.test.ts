@@ -98,4 +98,22 @@ describe('BooksRepository', () => {
     await expect(repository.addBook({ name: 'N', author: 'A' })).rejects.toThrow();
     expect(repository.isAdding).toBe(false);
   });
+
+  it('ignores a slow load that resolves after the reload from addBook', async () => {
+    let resolveSlow: (books: unknown) => void = () => undefined;
+    const gateway = fakeGateway({ get: { '/private': PRIVATE } });
+    gateway.get.mockImplementationOnce(() => new Promise((resolve) => (resolveSlow = resolve)));
+    const repository = createBooksRepository(gateway);
+
+    const slowLoad = repository.loadAllBooks();
+    gateway.get.mockImplementation((path: string) =>
+      Promise.resolve(path === '/private' ? PRIVATE : ALL),
+    );
+    await repository.addBook({ name: 'New Book', author: 'New Author' });
+
+    resolveSlow([ALL[0]]);
+    await slowLoad;
+
+    expect(repository.allBooks).toHaveLength(2);
+  });
 });

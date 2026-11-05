@@ -98,4 +98,15 @@ describe('BooksListController', () => {
     expect(controller.statusText).toBe('Could not load books');
     expect(controller.books).toEqual([]);
   });
+
+  it('clears the error status once a book is added and lists are reloaded', async () => {
+    const { gateway, repository, controller } = setup();
+    gateway.get.mockRejectedValueOnce(new Error('HTTP 502 for /'));
+    await controller.init();
+
+    await repository.addBook({ name: 'Mine', author: 'Me' });
+
+    expect(controller.books).toHaveLength(2);
+    expect(controller.statusText).toBe('');
+  });
 });

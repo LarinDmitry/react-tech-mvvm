@@ -78,4 +78,16 @@ describe('AddBookController', () => {
 
     expect(gateway.post).not.toHaveBeenCalled();
   });
+
+  it('treats the book as added when only the reload after POST fails', async () => {
+    const { gateway, controller } = setup();
+    gateway.get.mockRejectedValue(new Error('HTTP 502 for /'));
+    fillForm(controller);
+
+    await controller.submit();
+
+    expect(gateway.post).toHaveBeenCalledTimes(1);
+    expect(controller.errorText).not.toBe('Could not add the book');
+    expect(controller.name).toBe('');
+  });
 });
