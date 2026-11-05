@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { HttpGateway } from '@/shared/gateway/HttpGateway';
+
 import type { Book, BookDto, NewBook, StatusDto } from './Book.types';
 
 export const toBook = (dto: BookDto, index: number): Book => ({
@@ -10,21 +11,39 @@ export const toBook = (dto: BookDto, index: number): Book => ({
 });
 
 export const createBooksRepository = (gateway: HttpGateway) => {
+  const fetchBooks = async (path: string) => (await gateway.get<BookDto[]>(path)).map(toBook);
+
   const repository = makeAutoObservable(
     {
       allBooks: [] as Book[],
+      privateBooks: [] as Book[],
 
       async loadAllBooks() {
-        const dtos = await gateway.get<BookDto[]>('/');
+        const books = await fetchBooks('/');
         runInAction(() => {
-          repository.allBooks = dtos.map(toBook);
+          repository.allBooks = books;
+        });
+      },
+
+      async loadPrivateBooks() {
+        const books = await fetchBooks('/private');
+        runInAction(() => {
+          repository.privateBooks = books;
         });
       },
 
       async addBook({ name, author }: NewBook) {
         const result = await gateway.post<StatusDto>('/', { name, author });
         if (result.status !== 'ok') return false;
-        await repository.loadAllBooks();
+
+        const [allBooks, privateBooks] = await Promise.all([
+          fetchBooks('/'),
+          fetchBooks('/private'),
+        ]);
+        runInAction(() => {
+          repository.allBooks = allBooks;
+          repository.privateBooks = privateBooks;
+        });
         return true;
       },
     },

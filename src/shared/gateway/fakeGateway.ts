@@ -1,6 +1,11 @@
 import { vi } from 'vitest';
 
-export const fakeGateway = (response: unknown) => ({
-  get: vi.fn().mockResolvedValue(response),
-  post: vi.fn().mockResolvedValue(response),
+interface FakeResponses {
+  get?: Record<string, unknown>;
+  post?: unknown;
+}
+
+export const fakeGateway = ({ get = {}, post = { status: 'ok' } }: FakeResponses = {}) => ({
+  get: vi.fn().mockImplementation((path: string) => Promise.resolve(get[path])),
+  post: vi.fn().mockResolvedValue(post),
 });

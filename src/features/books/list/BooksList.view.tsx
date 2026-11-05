@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
+import { Tabs } from '@/shared/ui/Tabs';
+
 import styles from './BooksList.module.css';
 import { useBooksList } from './useBooksList';
 
@@ -8,6 +10,7 @@ export const BooksList = observer(function BooksList() {
 
   return (
     <section>
+      <Tabs options={vm.filterOptions} value={vm.filter} onChange={vm.setFilter} />
       <p className={styles.status}>{vm.statusText}</p>
       <ul className={styles.list}>
         {vm.books.map((book) => (

@@ -1,32 +1,54 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
+import type { TabOption } from '@/shared/ui/Tabs';
 
-const STATUS_TEXT = {
-  loading: 'Loading books…',
-  ready: '',
-  error: 'Could not load books',
-} as const;
+export type BooksFilter = 'all' | 'private';
 
-type Status = keyof typeof STATUS_TEXT;
+const FILTER_OPTIONS: readonly TabOption<BooksFilter>[] = [
+  { value: 'all', label: 'All books' },
+  { value: 'private', label: 'Private books' },
+];
+
+type Status = 'loading' | 'ready' | 'error';
 
 export const createBooksListController = (booksRepository: BooksRepository) => {
+  const loaders = {
+    all: booksRepository.loadAllBooks,
+    private: booksRepository.loadPrivateBooks,
+  };
+
   const controller = makeAutoObservable(
     {
+      filterOptions: FILTER_OPTIONS,
+      filter: 'all' as BooksFilter,
       status: 'loading' as Status,
 
       get books() {
-        return booksRepository.allBooks;
+        return controller.filter === 'all'
+          ? booksRepository.allBooks
+          : booksRepository.privateBooks;
       },
 
       get statusText() {
-        return STATUS_TEXT[controller.status];
+        if (controller.status === 'loading') return 'Loading books…';
+        if (controller.status === 'error') return 'Could not load books';
+        return controller.books.length ? '' : 'No books yet';
       },
 
-      async init() {
+      init() {
+        return controller.load();
+      },
+
+      setFilter(filter: BooksFilter) {
+        controller.filter = filter;
+        return controller.load();
+      },
+
+      async load() {
         controller.status = 'loading';
         try {
-          await booksRepository.loadAllBooks();
+          await loaders[controller.filter]();
           runInAction(() => {
             controller.status = 'ready';
           });
@@ -37,7 +59,7 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
         }
       },
     },
-    {},
+    { filterOptions: false },
     { autoBind: true },
   );
   return controller;

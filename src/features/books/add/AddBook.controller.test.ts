@@ -5,9 +5,10 @@ import { fakeGateway } from '@/shared/gateway/fakeGateway';
 
 import { createAddBookController } from './AddBook.controller';
 
+const DUNE = [{ name: 'Dune', author: 'Frank Herbert' }];
+
 const setup = (postResponse: unknown = { status: 'ok' }) => {
-  const gateway = fakeGateway([{ name: 'Dune', author: 'Frank Herbert' }]);
-  gateway.post.mockResolvedValue(postResponse);
+  const gateway = fakeGateway({ get: { '/': DUNE, '/private': DUNE }, post: postResponse });
   const repository = createBooksRepository(gateway);
   const controller = createAddBookController(repository);
   return { gateway, repository, controller };
