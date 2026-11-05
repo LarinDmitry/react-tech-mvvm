@@ -14,6 +14,9 @@ export const BooksList = observer(function BooksList() {
       <p className={styles.status} role="status">
         {vm.statusText}
       </p>
+      <button type="button" hidden={vm.isRetryHidden} onClick={vm.reload}>
+        Retry
+      </button>
       <ul className={styles.list} aria-busy={vm.isBusy}>
         {vm.books.map((book) => (
           <li key={book.key}>{book.title}</li>

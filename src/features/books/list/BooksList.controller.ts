@@ -57,7 +57,15 @@ export const createBooksListController = (booksRepository: Omit<BooksRepository,
         return controller.books.length ? '' : 'No books yet';
       },
 
+      get isRetryHidden() {
+        return sources[controller.filter].request.status !== 'error';
+      },
+
       init() {
+        return controller.reload();
+      },
+
+      reload() {
         return sources[controller.filter].load();
       },
 

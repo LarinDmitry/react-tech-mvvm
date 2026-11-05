@@ -104,6 +104,19 @@ describe('BooksListController', () => {
     expect(controller.books).toEqual([]);
   });
 
+  it('offers a retry only after a failed load', async () => {
+    const { gateway, controller } = setup();
+    gateway.get.mockRejectedValueOnce(new Error('HTTP 502 for /'));
+    expect(controller.isRetryHidden).toBe(true);
+
+    await controller.init();
+    expect(controller.isRetryHidden).toBe(false);
+
+    await controller.reload();
+    expect(controller.isRetryHidden).toBe(true);
+    expect(controller.books).toHaveLength(2);
+  });
+
   it('clears the error status once a book is added and lists are reloaded', async () => {
     const { gateway, repository, controller } = setup();
     gateway.get.mockRejectedValueOnce(new Error('HTTP 502 for /'));
