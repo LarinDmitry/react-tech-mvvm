@@ -6,20 +6,21 @@ import styles from './BooksList.module.css';
 import { useBooksList } from './useBooksList';
 
 export const BooksList = observer(function BooksList() {
-  const vm = useBooksList();
+  const { filterOptions, statusText, isRetryHidden, isBusy, books, setFilter, reload } =
+    useBooksList();
 
   return (
     <section>
-      <SegmentedControl label="Books filter" options={vm.filterOptions} onChange={vm.setFilter} />
+      <SegmentedControl label="Books filter" options={filterOptions} onChange={setFilter} />
       <p className={styles.status} role="status">
-        {vm.statusText}
+        {statusText}
       </p>
-      <button type="button" hidden={vm.isRetryHidden} onClick={vm.reload}>
+      <button type="button" hidden={isRetryHidden} onClick={reload}>
         Retry
       </button>
-      <ul className={styles.list} aria-busy={vm.isBusy}>
-        {vm.books.map((book) => (
-          <li key={book.key}>{book.title}</li>
+      <ul className={styles.list} aria-busy={isBusy}>
+        {books.map(({ key, title }) => (
+          <li key={key}>{title}</li>
         ))}
       </ul>
     </section>

@@ -12,15 +12,15 @@ export const SegmentedControl = <T extends string>({
   onChange,
 }: SegmentedControlProps<T>) => (
   <div className={styles.group} role="group" aria-label={label}>
-    {options.map((option) => (
+    {options.map(({ value, label: optionLabel, isSelected }) => (
       <button
-        key={option.value}
+        key={value}
         className={styles.option}
         type="button"
-        aria-pressed={option.isSelected}
-        onClick={() => onChange(option.value)}
+        aria-pressed={isSelected}
+        onClick={() => onChange(value)}
       >
-        {option.label}
+        {optionLabel}
       </button>
     ))}
   </div>

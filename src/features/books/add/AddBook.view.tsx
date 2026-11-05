@@ -7,22 +7,27 @@ import styles from './AddBook.module.css';
 import { useAddBook } from './useAddBook';
 
 export const AddBook = observer(function AddBook() {
-  const vm = useAddBook();
+  const {
+    name,
+    author,
+    isSubmitting,
+    isSubmitDisabled,
+    submitText,
+    errorText,
+    setName,
+    setAuthor,
+    submit,
+  } = useAddBook();
 
   return (
-    <Form className={styles.form} onSubmit={vm.submit}>
-      <TextField label="Name" value={vm.name} disabled={vm.isSubmitting} onChange={vm.setName} />
-      <TextField
-        label="Author"
-        value={vm.author}
-        disabled={vm.isSubmitting}
-        onChange={vm.setAuthor}
-      />
-      <button className={styles.submit} type="submit" disabled={vm.isSubmitDisabled}>
-        {vm.submitText}
+    <Form className={styles.form} onSubmit={submit}>
+      <TextField label="Name" value={name} disabled={isSubmitting} onChange={setName} />
+      <TextField label="Author" value={author} disabled={isSubmitting} onChange={setAuthor} />
+      <button className={styles.submit} type="submit" disabled={isSubmitDisabled}>
+        {submitText}
       </button>
       <p className={styles.error} role="alert">
-        {vm.errorText}
+        {errorText}
       </p>
     </Form>
   );

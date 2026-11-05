@@ -5,10 +5,10 @@ import { createRequestState } from '@/shared/store/createRequestState';
 
 import type { Book, BookDto, NewBook, StatusDto } from './Book.types';
 
-export const toBook = (dto: BookDto, index: number): Book => ({
-  key: dto.id === undefined ? `idx:${index}` : `id:${dto.id}`,
-  name: dto.name,
-  author: dto.author,
+export const toBook = ({ id, name, author }: BookDto, index: number): Book => ({
+  key: id === undefined ? `idx:${index}` : `id:${id}`,
+  name,
+  author,
 });
 
 export const createBooksRepository = (gateway: HttpGateway) => {
@@ -43,8 +43,8 @@ export const createBooksRepository = (gateway: HttpGateway) => {
       async addBook({ name, author }: NewBook) {
         repository.isAdding = true;
         try {
-          const result = await gateway.post<StatusDto>('/', { name, author });
-          if (result.status !== 'ok') throw new Error(`Book was not added: ${result.status}`);
+          const { status } = await gateway.post<StatusDto>('/', { name, author });
+          if (status !== 'ok') throw new Error(`Book was not added: ${status}`);
 
           // book is already saved here, so if the reload fails it's a list error, not an add error
           await Promise.all([repository.loadAllBooks(), repository.loadPrivateBooks()]);

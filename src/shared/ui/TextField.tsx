@@ -14,7 +14,7 @@ export const TextField = ({ label, value, disabled, onChange }: TextFieldProps) 
       className={styles.input}
       value={value}
       disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={({ target: { value } }) => onChange(value)}
     />
   </label>
 );

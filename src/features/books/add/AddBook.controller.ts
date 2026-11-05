@@ -16,7 +16,8 @@ export const createAddBookController = (
       },
 
       get isSubmitDisabled() {
-        return controller.isSubmitting || !controller.name.trim() || !controller.author.trim();
+        const { isSubmitting, name, author } = controller;
+        return isSubmitting || !name.trim() || !author.trim();
       },
 
       get submitText() {
@@ -41,11 +42,9 @@ export const createAddBookController = (
         if (controller.isSubmitDisabled) return;
         controller.hasError = false;
 
+        const { name, author } = controller;
         try {
-          await booksRepository.addBook({
-            name: controller.name.trim(),
-            author: controller.author.trim(),
-          });
+          await booksRepository.addBook({ name: name.trim(), author: author.trim() });
           runInAction(() => {
             controller.name = '';
             controller.author = '';

@@ -33,16 +33,17 @@ export const createBooksListController = (booksRepository: Omit<BooksRepository,
       filter: 'all' as BooksFilter,
 
       get filterOptions() {
-        return FILTERS.map((option) => ({
-          ...option,
-          isSelected: option.value === controller.filter,
+        return FILTERS.map(({ value, label }) => ({
+          value,
+          label,
+          isSelected: value === controller.filter,
         }));
       },
 
       get books() {
-        return sources[controller.filter].books.map((book) => ({
-          key: book.key,
-          title: `${book.author}: ${book.name}`,
+        return sources[controller.filter].books.map(({ key, author, name }) => ({
+          key,
+          title: `${author}: ${name}`,
         }));
       },
 

@@ -4,7 +4,7 @@ import styles from './Header.module.css';
 import { useHeader } from './useHeader';
 
 export const Header = observer(function Header() {
-  const vm = useHeader();
+  const { title } = useHeader();
 
-  return <header className={styles.header}>{vm.title}</header>;
+  return <header className={styles.header}>{title}</header>;
 });

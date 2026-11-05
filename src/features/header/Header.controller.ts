@@ -11,9 +11,9 @@ export const createHeaderController = (booksRepository: PrivateBooks) => {
   const controller = makeAutoObservable(
     {
       get counterText() {
-        const request = booksRepository.privateBooksRequest;
-        if (request.isLoaded) return String(booksRepository.privateBooks.length);
-        return request.status === 'error' ? '—' : '…';
+        const { privateBooks, privateBooksRequest } = booksRepository;
+        if (privateBooksRequest.isLoaded) return String(privateBooks.length);
+        return privateBooksRequest.status === 'error' ? '—' : '…';
       },
 
       get title() {
