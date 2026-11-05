@@ -111,6 +111,20 @@ describe('BooksListController', () => {
     expect(controller.books).toHaveLength(2);
   });
 
+  it('shows fresh private books when switched to them while a book is being added', async () => {
+    const { gateway, repository, controller } = setup();
+    await controller.init();
+    const added = { name: 'Solaris', author: 'Stanislaw Lem' };
+    gateway.get.mockResolvedValue([added]);
+
+    const adding = repository.addBook(added);
+    const switching = controller.setFilter('private');
+    await Promise.all([adding, switching]);
+
+    expect(controller.books).toEqual([{ key: 'idx:0', title: 'Stanislaw Lem: Solaris' }]);
+    expect(controller.statusText).toBe('');
+  });
+
   it('clears the error status once a book is added and lists are reloaded', async () => {
     const { gateway, repository, controller } = setup();
     gateway.get.mockRejectedValueOnce(new Error('HTTP 502 for /'));
