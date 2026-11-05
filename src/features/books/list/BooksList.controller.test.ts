@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { createBooksRepository } from '@/features/books/Books.repository';
-import { fakeGateway } from '@/shared/gateway/fakeGateway';
+import { fakeGateway } from '@/test/fakeGateway';
 
 import { createBooksListController } from './BooksList.controller';
 
-const ALL = [
-  { id: 1, name: 'Dune', author: 'Frank Herbert' },
-  { name: 'Mine', author: 'Me' },
-];
-const PRIVATE = [{ name: 'Mine', author: 'Me' }];
-
-const setup = (gateway = fakeGateway({ get: { '/': ALL, '/private': PRIVATE } })) => {
+const setup = (gateway = fakeGateway()) => {
   const repository = createBooksRepository(gateway);
   return { gateway, repository, controller: createBooksListController(repository) };
 };
@@ -58,7 +52,7 @@ describe('BooksListController', () => {
   });
 
   it('says so when the selected list is empty', async () => {
-    const { controller } = setup(fakeGateway({ get: { '/': ALL, '/private': [] } }));
+    const { controller } = setup(fakeGateway({ get: { '/private': [] } }));
 
     await controller.setFilter('private');
 

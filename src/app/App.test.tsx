@@ -5,17 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BooksList } from '@/features/books/list/BooksList.view';
 import { Header } from '@/features/header/Header.view';
-import { fakeGateway } from '@/shared/gateway/fakeGateway';
-
-import { renderWithContainer } from './renderWithContainer';
-
-const ALL = [
-  { id: 1, name: 'Dune', author: 'Frank Herbert' },
-  { name: 'Mine', author: 'Me' },
-];
-const PRIVATE = [{ name: 'Mine', author: 'Me' }];
-
-const gateway = () => fakeGateway({ get: { '/': ALL, '/private': PRIVATE } });
+import { fakeGateway } from '@/test/fakeGateway';
+import { renderWithContainer } from '@/test/renderWithContainer';
 
 afterEach(cleanup);
 
@@ -26,7 +17,7 @@ describe('App views', () => {
       <Profiler id="list" onRender={onRender}>
         <BooksList />
       </Profiler>,
-      gateway(),
+      fakeGateway(),
     );
 
     expect(screen.getByText('Loading books…')).toBeTruthy();
@@ -35,7 +26,7 @@ describe('App views', () => {
   });
 
   it('shows the private books counter in the header', async () => {
-    renderWithContainer(<Header />, gateway());
+    renderWithContainer(<Header />, fakeGateway());
 
     expect(await screen.findByText('Your books: 1')).toBeTruthy();
   });
@@ -49,7 +40,7 @@ describe('App views', () => {
         </Profiler>
         <BooksList />
       </>,
-      gateway(),
+      fakeGateway(),
     );
     await screen.findByText('Your books: 1');
     await screen.findByText('Frank Herbert: Dune');

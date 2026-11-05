@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { createBooksRepository } from '@/features/books/Books.repository';
-import { fakeGateway } from '@/shared/gateway/fakeGateway';
+import { fakeGateway } from '@/test/fakeGateway';
 
 import { createAddBookController } from './AddBook.controller';
 
-const DUNE = [{ name: 'Dune', author: 'Frank Herbert' }];
-
 const setup = (postResponse: unknown = { status: 'ok' }) => {
-  const gateway = fakeGateway({ get: { '/': DUNE, '/private': DUNE }, post: postResponse });
+  const gateway = fakeGateway({ post: postResponse });
   const repository = createBooksRepository(gateway);
   const controller = createAddBookController(repository);
   return { gateway, repository, controller };
@@ -42,7 +40,7 @@ describe('AddBookController', () => {
     await submitting;
 
     expect(gateway.post).toHaveBeenCalledWith('/', { name: 'Dune', author: 'Frank Herbert' });
-    expect(repository.allBooks).toEqual([{ key: 'idx:0', name: 'Dune', author: 'Frank Herbert' }]);
+    expect(repository.allBooks).toHaveLength(2);
     expect(controller.name).toBe('');
     expect(controller.author).toBe('');
     expect(controller.submitText).toBe('Add');

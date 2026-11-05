@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { fakeGateway } from '@/shared/gateway/fakeGateway';
+import { ALL_BOOKS } from '@/test/books';
+import { deferred } from '@/test/deferred';
+import { fakeGateway } from '@/test/fakeGateway';
 
 import { createBooksRepository } from './Books.repository';
-
-const ALL = [
-  { id: 111, name: 'Wind in the willows', ownerId: 'someone', author: 'Kenneth Graeme' },
-  { name: 'New Book', author: 'New Author' },
-];
-const PRIVATE = [{ name: 'New Book', author: 'New Author' }];
 
 describe('BooksRepository', () => {
   it('starts with empty lists', () => {
@@ -18,21 +14,21 @@ describe('BooksRepository', () => {
     expect(repository.privateBooks).toEqual([]);
   });
 
-  it('loads all books from "/" and maps DTOs to books with stable keys', async () => {
-    const gateway = fakeGateway({ get: { '/': ALL } });
+  it('loads all books from "/", keyed by id or by position when there is no id', async () => {
+    const gateway = fakeGateway();
     const repository = createBooksRepository(gateway);
 
     await repository.loadAllBooks();
 
     expect(gateway.get).toHaveBeenCalledWith('/');
     expect(repository.allBooks).toEqual([
-      { key: 'id:111', name: 'Wind in the willows', author: 'Kenneth Graeme' },
-      { key: 'idx:1', name: 'New Book', author: 'New Author' },
+      { key: 'id:1', name: 'Dune', author: 'Frank Herbert' },
+      { key: 'idx:1', name: 'Mine', author: 'Me' },
     ]);
   });
 
   it('keeps the loaded books and reports an error when a reload fails', async () => {
-    const gateway = fakeGateway({ get: { '/': ALL } });
+    const gateway = fakeGateway();
     const repository = createBooksRepository(gateway);
     await repository.loadAllBooks();
 
@@ -44,24 +40,22 @@ describe('BooksRepository', () => {
   });
 
   it('loads private books from "/private"', async () => {
-    const gateway = fakeGateway({ get: { '/private': PRIVATE } });
+    const gateway = fakeGateway();
     const repository = createBooksRepository(gateway);
 
     await repository.loadPrivateBooks();
 
     expect(gateway.get).toHaveBeenCalledWith('/private');
-    expect(repository.privateBooks).toEqual([
-      { key: 'idx:0', name: 'New Book', author: 'New Author' },
-    ]);
+    expect(repository.privateBooks).toEqual([{ key: 'idx:0', name: 'Mine', author: 'Me' }]);
   });
 
   it('adds a book by POSTing name and author to "/" and reloads both lists', async () => {
-    const gateway = fakeGateway({ get: { '/': ALL, '/private': PRIVATE } });
+    const gateway = fakeGateway();
     const repository = createBooksRepository(gateway);
 
-    await repository.addBook({ name: 'New Book', author: 'New Author' });
+    await repository.addBook({ name: 'Mine', author: 'Me' });
 
-    expect(gateway.post).toHaveBeenCalledWith('/', { name: 'New Book', author: 'New Author' });
+    expect(gateway.post).toHaveBeenCalledWith('/', { name: 'Mine', author: 'Me' });
     expect(repository.allBooks).toHaveLength(2);
     expect(repository.privateBooks).toHaveLength(1);
   });
@@ -75,9 +69,7 @@ describe('BooksRepository', () => {
   });
 
   it('is adding from the POST until both lists are reloaded', async () => {
-    const repository = createBooksRepository(
-      fakeGateway({ get: { '/': ALL, '/private': PRIVATE } }),
-    );
+    const repository = createBooksRepository(fakeGateway());
     expect(repository.isAdding).toBe(false);
 
     const adding = repository.addBook({ name: 'N', author: 'A' });
@@ -98,18 +90,15 @@ describe('BooksRepository', () => {
   });
 
   it('ignores a slow load that resolves after the reload from addBook', async () => {
-    let resolveSlow: (books: unknown) => void = () => undefined;
-    const gateway = fakeGateway({ get: { '/private': PRIVATE } });
-    gateway.get.mockImplementationOnce(() => new Promise((resolve) => (resolveSlow = resolve)));
+    const slow = deferred<unknown>();
+    const gateway = fakeGateway();
+    gateway.get.mockReturnValueOnce(slow.promise);
     const repository = createBooksRepository(gateway);
 
     const slowLoad = repository.loadAllBooks();
-    gateway.get.mockImplementation((path: string) =>
-      Promise.resolve(path === '/private' ? PRIVATE : ALL),
-    );
-    await repository.addBook({ name: 'New Book', author: 'New Author' });
+    await repository.addBook({ name: 'Mine', author: 'Me' });
 
-    resolveSlow([ALL[0]]);
+    slow.resolve(ALL_BOOKS.slice(0, 1));
     await slowLoad;
 
     expect(repository.allBooks).toHaveLength(2);

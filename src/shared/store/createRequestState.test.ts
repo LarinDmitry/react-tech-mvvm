@@ -1,16 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createRequestState } from './createRequestState';
+import { deferred } from '@/test/deferred';
 
-const deferred = <T>() => {
-  let resolve: (value: T) => void = () => undefined;
-  let reject: (error: Error) => void = () => undefined;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
-};
+import { createRequestState } from './createRequestState';
 
 describe('createRequestState', () => {
   it('is loading until the request resolves, then applies the result and is ready', async () => {

@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { createBooksRepository } from '@/features/books/Books.repository';
-import { fakeGateway } from '@/shared/gateway/fakeGateway';
+import { PRIVATE_BOOKS } from '@/test/books';
+import { fakeGateway } from '@/test/fakeGateway';
 
 import { createHeaderController } from './Header.controller';
 
-const PRIVATE = [
-  { name: 'Mine', author: 'Me' },
-  { name: 'Also mine', author: 'Me' },
-];
-
-const setup = (gateway = fakeGateway({ get: { '/': PRIVATE, '/private': PRIVATE } })) => {
+const setup = (gateway = fakeGateway()) => {
   const repository = createBooksRepository(gateway);
   return { gateway, repository, controller: createHeaderController(repository) };
 };
@@ -24,7 +20,7 @@ describe('HeaderController', () => {
 
     await loading;
     expect(gateway.get).toHaveBeenCalledWith('/private');
-    expect(controller.title).toBe('Your books: 2');
+    expect(controller.title).toBe('Your books: 1');
   });
 
   it('updates the counter after a book is added', async () => {
@@ -34,11 +30,11 @@ describe('HeaderController', () => {
     expect(controller.title).toBe('Your books: 0');
 
     gateway.get.mockImplementation((path: string) =>
-      Promise.resolve(path === '/private' ? PRIVATE : []),
+      Promise.resolve(path === '/private' ? PRIVATE_BOOKS : []),
     );
-    await repository.addBook({ name: 'Also mine', author: 'Me' });
+    await repository.addBook({ name: 'Mine', author: 'Me' });
 
-    expect(controller.title).toBe('Your books: 2');
+    expect(controller.title).toBe('Your books: 1');
   });
 
   it('shows a dash when loading fails', async () => {
@@ -58,6 +54,6 @@ describe('HeaderController', () => {
 
     await repository.addBook({ name: 'Mine', author: 'Me' });
 
-    expect(controller.title).toBe('Your books: 2');
+    expect(controller.title).toBe('Your books: 1');
   });
 });
