@@ -1,17 +1,14 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
-import { createRequestState } from '@/shared/store/createRequestState';
 
 export const createHeaderController = (booksRepository: BooksRepository) => {
-  const request = createRequestState();
-
   const controller = makeAutoObservable(
     {
       get counterText() {
-        if (request.status === 'loading') return '…';
-        if (request.status === 'error') return '—';
-        return String(booksRepository.privateBooks.length);
+        const request = booksRepository.privateBooksRequest;
+        if (request.isLoaded) return String(booksRepository.privateBooks.length);
+        return request.status === 'error' ? '—' : '…';
       },
 
       get title() {
@@ -19,7 +16,7 @@ export const createHeaderController = (booksRepository: BooksRepository) => {
       },
 
       init() {
-        return request.run(booksRepository.loadPrivateBooks);
+        return booksRepository.loadPrivateBooks();
       },
     },
     {},

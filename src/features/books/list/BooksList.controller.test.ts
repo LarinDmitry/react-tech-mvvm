@@ -75,6 +75,20 @@ describe('BooksListController', () => {
     expect(controller.statusText).toBe('');
   });
 
+  it('keeps showing already loaded books while they are reloaded', async () => {
+    const { controller } = setup();
+    await controller.init();
+    await controller.setFilter('private');
+
+    const reloading = controller.setFilter('all');
+    expect(controller.isBusy).toBe(true);
+    expect(controller.statusText).toBe('Updating list…');
+    expect(controller.books).toHaveLength(2);
+
+    await reloading;
+    expect(controller.isBusy).toBe(false);
+  });
+
   it('shows error status when loading fails', async () => {
     const { gateway, controller } = setup();
     gateway.get.mockRejectedValue(new Error('HTTP 500 for /'));

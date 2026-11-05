@@ -31,6 +31,18 @@ describe('BooksRepository', () => {
     ]);
   });
 
+  it('keeps the loaded books and reports an error when a reload fails', async () => {
+    const gateway = fakeGateway({ get: { '/': ALL } });
+    const repository = createBooksRepository(gateway);
+    await repository.loadAllBooks();
+
+    gateway.get.mockRejectedValue(new Error('HTTP 500 for /'));
+    await repository.loadAllBooks();
+
+    expect(repository.allBooksRequest.status).toBe('error');
+    expect(repository.allBooks).toHaveLength(2);
+  });
+
   it('loads private books from "/private"', async () => {
     const gateway = fakeGateway({ get: { '/private': PRIVATE } });
     const repository = createBooksRepository(gateway);

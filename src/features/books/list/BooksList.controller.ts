@@ -1,7 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
-import { createRequestState } from '@/shared/store/createRequestState';
 import type { TabOption } from '@/shared/ui/Tabs';
 
 export type BooksFilter = 'all' | 'private';
@@ -12,10 +11,17 @@ const FILTER_OPTIONS: readonly TabOption<BooksFilter>[] = [
 ];
 
 export const createBooksListController = (booksRepository: BooksRepository) => {
-  const request = createRequestState();
-  const loaders = {
-    all: booksRepository.loadAllBooks,
-    private: booksRepository.loadPrivateBooks,
+  const sources = {
+    all: {
+      books: () => booksRepository.allBooks,
+      request: booksRepository.allBooksRequest,
+      load: booksRepository.loadAllBooks,
+    },
+    private: {
+      books: () => booksRepository.privateBooks,
+      request: booksRepository.privateBooksRequest,
+      load: booksRepository.loadPrivateBooks,
+    },
   };
 
   const controller = makeAutoObservable(
@@ -24,29 +30,28 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
       filter: 'all' as BooksFilter,
 
       get books() {
-        return controller.filter === 'all'
-          ? booksRepository.allBooks
-          : booksRepository.privateBooks;
+        return sources[controller.filter].books();
       },
 
       get isBusy() {
-        return request.status === 'loading' || booksRepository.isAdding;
+        return sources[controller.filter].request.status === 'loading' || booksRepository.isAdding;
       },
 
       get statusText() {
-        if (request.status === 'loading') return 'Loading books…';
+        const { request } = sources[controller.filter];
         if (request.status === 'error') return 'Could not load books';
-        if (booksRepository.isAdding) return 'Updating list…';
+        if (!request.isLoaded) return 'Loading books…';
+        if (controller.isBusy) return 'Updating list…';
         return controller.books.length ? '' : 'No books yet';
       },
 
       init() {
-        return request.run(loaders[controller.filter]);
+        return sources[controller.filter].load();
       },
 
       setFilter(filter: BooksFilter) {
         controller.filter = filter;
-        return request.run(loaders[filter]);
+        return sources[filter].load();
       },
     },
     { filterOptions: false },

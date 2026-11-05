@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { HttpGateway } from '@/shared/gateway/HttpGateway';
+import { createRequestState } from '@/shared/store/createRequestState';
 
 import type { Book, BookDto, NewBook, StatusDto } from './Book.types';
 
@@ -17,20 +18,26 @@ export const createBooksRepository = (gateway: HttpGateway) => {
     {
       allBooks: [] as Book[],
       privateBooks: [] as Book[],
+      allBooksRequest: createRequestState(),
+      privateBooksRequest: createRequestState(),
       isAdding: false,
 
-      async loadAllBooks() {
-        const books = await fetchBooks('/');
-        runInAction(() => {
-          repository.allBooks = books;
-        });
+      loadAllBooks() {
+        return repository.allBooksRequest.run(
+          () => fetchBooks('/'),
+          (books) => {
+            repository.allBooks = books;
+          },
+        );
       },
 
-      async loadPrivateBooks() {
-        const books = await fetchBooks('/private');
-        runInAction(() => {
-          repository.privateBooks = books;
-        });
+      loadPrivateBooks() {
+        return repository.privateBooksRequest.run(
+          () => fetchBooks('/private'),
+          (books) => {
+            repository.privateBooks = books;
+          },
+        );
       },
 
       async addBook({ name, author }: NewBook) {
@@ -55,7 +62,7 @@ export const createBooksRepository = (gateway: HttpGateway) => {
         }
       },
     },
-    {},
+    { allBooksRequest: false, privateBooksRequest: false },
     { autoBind: true },
   );
   return repository;

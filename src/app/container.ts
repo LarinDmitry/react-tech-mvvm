@@ -2,14 +2,11 @@ import { createContext, use } from 'react';
 
 import { createBooksRepository } from '@/features/books/Books.repository';
 import { config } from '@/shared/config';
-import { createHttpGateway } from '@/shared/gateway/HttpGateway';
+import { createHttpGateway, type HttpGateway } from '@/shared/gateway/HttpGateway';
 
-export const createContainer = () => {
-  const gateway = createHttpGateway(config.apiBase);
-  return {
-    booksRepository: createBooksRepository(gateway),
-  };
-};
+export const createContainer = (gateway: HttpGateway = createHttpGateway(config.apiBase)) => ({
+  booksRepository: createBooksRepository(gateway),
+});
 
 export type Container = ReturnType<typeof createContainer>;
 
