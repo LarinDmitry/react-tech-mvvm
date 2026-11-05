@@ -1,0 +1,21 @@
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.submit {
+  padding: 4px 16px;
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+  color: #c62828;
+}
+
+.error:empty {
+  display: none;
+}

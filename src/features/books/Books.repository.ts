@@ -23,7 +23,9 @@ export const createBooksRepository = (gateway: HttpGateway) => {
 
       async addBook({ name, author }: NewBook) {
         const result = await gateway.post<StatusDto>('/', { name, author });
-        return result.status === 'ok';
+        if (result.status !== 'ok') return false;
+        await repository.loadAllBooks();
+        return true;
       },
     },
     {},

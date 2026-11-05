@@ -5,12 +5,13 @@ interface Lifecycle {
   dispose?: () => void;
 }
 
-export const useController = <T extends Lifecycle>(create: () => T): T => {
+export const useController = <T extends object>(create: () => T): T => {
   const [controller] = useState(create);
 
   useEffect(() => {
-    controller.init?.();
-    return () => controller.dispose?.();
+    const lifecycle: Lifecycle = controller;
+    lifecycle.init?.();
+    return () => lifecycle.dispose?.();
   }, [controller]);
 
   return controller;

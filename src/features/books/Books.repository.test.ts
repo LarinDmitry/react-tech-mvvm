@@ -24,17 +24,21 @@ describe('BooksRepository', () => {
     expect(createBooksRepository(fakeGateway([])).allBooks).toEqual([]);
   });
 
-  it('adds a book by POSTing name and author to "/"', async () => {
-    const gateway = fakeGateway({ status: 'ok' });
+  it('adds a book by POSTing name and author to "/" and reloads the list', async () => {
+    const gateway = fakeGateway([{ name: 'N', author: 'A' }]);
+    gateway.post.mockResolvedValue({ status: 'ok' });
     const repository = createBooksRepository(gateway);
 
     await expect(repository.addBook({ name: 'N', author: 'A' })).resolves.toBe(true);
     expect(gateway.post).toHaveBeenCalledWith('/', { name: 'N', author: 'A' });
+    expect(repository.allBooks).toEqual([{ key: 'idx:0', name: 'N', author: 'A' }]);
   });
 
-  it('reports failure when the API does not answer "ok"', async () => {
-    const repository = createBooksRepository(fakeGateway({ status: 'error' }));
+  it('reports failure and does not reload when the API does not answer "ok"', async () => {
+    const gateway = fakeGateway({ status: 'error' });
+    const repository = createBooksRepository(gateway);
 
     await expect(repository.addBook({ name: 'N', author: 'A' })).resolves.toBe(false);
+    expect(gateway.get).not.toHaveBeenCalled();
   });
 });
