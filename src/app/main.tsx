@@ -1,24 +1,21 @@
-import { StrictMode, useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './styles.css';
-import booksRepository, { type BookDto } from './Books/Books.repository';
+import { createContainer } from './container';
 
-function App() {
-  const [list, setList] = useState<BookDto[]>([]);
+const { booksRepository } = createContainer();
 
+const App = observer(() => {
   useEffect(() => {
-    async function load() {
-      const books = await booksRepository.getBooks();
-      setList(books);
-    }
-    void load();
+    void booksRepository.loadAllBooks();
   }, []);
 
   return (
     <div>
-      {list.map((book, i) => (
-        <div key={i}>
+      {booksRepository.allBooks.map((book) => (
+        <div key={book.key}>
           {book.author}: {book.name}
         </div>
       ))}
@@ -31,7 +28,7 @@ function App() {
       </button>
     </div>
   );
-}
+});
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element #root not found');
