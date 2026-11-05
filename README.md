@@ -3,6 +3,8 @@
 Small books app: list of books, All / Private switch, add form and a sticky header with your books counter.
 React 19 + MobX, MVVM-ish layers, logic tested without rendering.
 
+**Demo:** https://larindmitry.github.io/react-tech-mvvm/ (accept the API certificate first, see below)
+
 ## Getting started
 
 Needs Node 20.19+ or 22.12+.
