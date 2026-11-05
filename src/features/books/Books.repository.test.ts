@@ -1,11 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
+import { fakeGateway } from '@/shared/gateway/fakeGateway';
 import { createBooksRepository } from './Books.repository';
-
-const fakeGateway = (response: unknown) => ({
-  get: vi.fn().mockResolvedValue(response),
-  post: vi.fn().mockResolvedValue(response),
-});
 
 describe('BooksRepository', () => {
   it('loads all books from "/" and maps DTOs to books with stable keys', async () => {

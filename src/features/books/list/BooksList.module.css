@@ -1,0 +1,8 @@
+.status:empty {
+  display: none;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}

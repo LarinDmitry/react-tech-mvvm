@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import type { HttpGateway } from '../../shared/gateway/HttpGateway';
+import type { HttpGateway } from '@/shared/gateway/HttpGateway';
 import type { Book, BookDto, NewBook, StatusDto } from './Book.types';
 
 export const toBook = (dto: BookDto, index: number): Book => ({
