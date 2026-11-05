@@ -15,6 +15,13 @@ npm run dev                  # http://localhost:5173
 
 `VITE_API_BASE` is the books API URL including the user, e.g. `https://<api-host>/v1/books/<user>`.
 
+The API uses a self-signed certificate. If the list says "Could not load books", open the API URL in the browser once and accept the certificate.
+
+## Deploy
+
+Every push to `main` runs lint, tests and build, then deploys to GitHub Pages (`.github/workflows/deploy.yml`).
+The API URL is taken from the `VITE_API_BASE` repository secret. Pages source has to be set to "GitHub Actions" in the repo settings.
+
 ## Scripts
 
 | Command             | What it does                 |
