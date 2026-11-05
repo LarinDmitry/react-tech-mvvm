@@ -2,7 +2,12 @@ import { makeAutoObservable } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
 
-export const createHeaderController = (booksRepository: BooksRepository) => {
+type PrivateBooks = Pick<
+  BooksRepository,
+  'privateBooks' | 'privateBooksRequest' | 'loadPrivateBooks'
+>;
+
+export const createHeaderController = (booksRepository: PrivateBooks) => {
   const controller = makeAutoObservable(
     {
       get counterText() {

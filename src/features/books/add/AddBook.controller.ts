@@ -2,7 +2,9 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
 
-export const createAddBookController = (booksRepository: BooksRepository) => {
+export const createAddBookController = (
+  booksRepository: Pick<BooksRepository, 'isAdding' | 'addBook'>,
+) => {
   const controller = makeAutoObservable(
     {
       name: '',

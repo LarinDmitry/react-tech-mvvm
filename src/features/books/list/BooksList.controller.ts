@@ -9,7 +9,7 @@ const FILTERS: readonly { value: BooksFilter; label: string }[] = [
   { value: 'private', label: 'Private books' },
 ];
 
-export const createBooksListController = (booksRepository: BooksRepository) => {
+export const createBooksListController = (booksRepository: Omit<BooksRepository, 'addBook'>) => {
   const sources = {
     all: {
       get books() {
