@@ -9,5 +9,10 @@ export default defineConfig(({ command }) => ({
   },
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/test/**', 'src/app/main.tsx', 'src/**/*.d.ts'],
+      thresholds: { lines: 90, branches: 90, functions: 90, statements: 90 },
+    },
   },
 }));

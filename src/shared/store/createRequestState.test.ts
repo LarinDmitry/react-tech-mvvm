@@ -56,4 +56,16 @@ describe('createRequestState', () => {
     expect(apply).toHaveBeenCalledTimes(1);
     expect(apply).toHaveBeenCalledWith('new');
   });
+
+  it('ignores an error from a request that was already replaced', async () => {
+    const state = createRequestState();
+    const slow = deferred<string>();
+
+    const slowRun = state.run(() => slow.promise, vi.fn());
+    await state.run(() => Promise.resolve('new'), vi.fn());
+    slow.reject(new Error('late'));
+    await slowRun;
+
+    expect(state.status).toBe('ready');
+  });
 });
