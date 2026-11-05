@@ -28,15 +28,20 @@ describe('BooksListController', () => {
     await loading;
     expect(controller.statusText).toBe('');
     expect(controller.books).toEqual([
-      { key: 'id:1', name: 'Dune', author: 'Frank Herbert' },
-      { key: 'idx:1', name: 'Mine', author: 'Me' },
+      { key: 'id:1', title: 'Frank Herbert: Dune' },
+      { key: 'idx:1', title: 'Me: Mine' },
     ]);
   });
 
-  it('offers two filters: all and private', () => {
+  it('offers two filters and marks the selected one', async () => {
     const { controller } = setup();
+    expect(controller.filterOptions).toEqual([
+      { value: 'all', label: 'All books', isSelected: true },
+      { value: 'private', label: 'Private books', isSelected: false },
+    ]);
 
-    expect(controller.filterOptions.map((option) => option.value)).toEqual(['all', 'private']);
+    await controller.setFilter('private');
+    expect(controller.filterOptions.map((option) => option.isSelected)).toEqual([false, true]);
   });
 
   it('switches between all and private books', async () => {
@@ -46,7 +51,7 @@ describe('BooksListController', () => {
     await controller.setFilter('private');
     expect(gateway.get).toHaveBeenLastCalledWith('/private');
     expect(controller.filter).toBe('private');
-    expect(controller.books).toEqual([{ key: 'idx:0', name: 'Mine', author: 'Me' }]);
+    expect(controller.books).toEqual([{ key: 'idx:0', title: 'Me: Mine' }]);
 
     await controller.setFilter('all');
     expect(controller.books).toHaveLength(2);

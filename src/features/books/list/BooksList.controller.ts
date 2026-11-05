@@ -1,11 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
-import type { TabOption } from '@/shared/ui/Tabs';
 
 export type BooksFilter = 'all' | 'private';
 
-const FILTER_OPTIONS: readonly TabOption<BooksFilter>[] = [
+const FILTERS: readonly { value: BooksFilter; label: string }[] = [
   { value: 'all', label: 'All books' },
   { value: 'private', label: 'Private books' },
 ];
@@ -13,12 +12,16 @@ const FILTER_OPTIONS: readonly TabOption<BooksFilter>[] = [
 export const createBooksListController = (booksRepository: BooksRepository) => {
   const sources = {
     all: {
-      books: () => booksRepository.allBooks,
+      get books() {
+        return booksRepository.allBooks;
+      },
       request: booksRepository.allBooksRequest,
       load: booksRepository.loadAllBooks,
     },
     private: {
-      books: () => booksRepository.privateBooks,
+      get books() {
+        return booksRepository.privateBooks;
+      },
       request: booksRepository.privateBooksRequest,
       load: booksRepository.loadPrivateBooks,
     },
@@ -26,11 +29,20 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
 
   const controller = makeAutoObservable(
     {
-      filterOptions: FILTER_OPTIONS,
       filter: 'all' as BooksFilter,
 
+      get filterOptions() {
+        return FILTERS.map((option) => ({
+          ...option,
+          isSelected: option.value === controller.filter,
+        }));
+      },
+
       get books() {
-        return sources[controller.filter].books();
+        return sources[controller.filter].books.map((book) => ({
+          key: book.key,
+          title: `${book.author}: ${book.name}`,
+        }));
       },
 
       get isBusy() {
@@ -54,7 +66,7 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
         return sources[filter].load();
       },
     },
-    { filterOptions: false },
+    {},
     { autoBind: true },
   );
   return controller;

@@ -56,15 +56,13 @@ describe('App views', () => {
     const rendersBefore = onHeaderRender.mock.calls.length;
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('tab', { name: 'Private books' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Private books' }));
     });
     await act(async () => {
-      fireEvent.click(screen.getByRole('tab', { name: 'All books' }));
+      fireEvent.click(screen.getByRole('button', { name: 'All books' }));
     });
 
-    expect(screen.getByRole('tab', { name: 'All books' }).getAttribute('aria-selected')).toBe(
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'All books', pressed: true })).toBeTruthy();
     expect(onHeaderRender).toHaveBeenCalledTimes(rendersBefore);
   });
 });

@@ -1,11 +1,11 @@
-.tabs {
+.group {
   display: inline-flex;
   border: 1px solid #1976d2;
   border-radius: 6px;
   overflow: hidden;
 }
 
-.tab {
+.option {
   padding: 6px 16px;
   border: none;
   background: transparent;
@@ -13,7 +13,7 @@
   cursor: pointer;
 }
 
-.tab[aria-selected='true'] {
+.option[aria-pressed='true'] {
   background: #1976d2;
   color: #fff;
 }

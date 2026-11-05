@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { Tabs } from '@/shared/ui/Tabs';
+import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 
 import styles from './BooksList.module.css';
 import { useBooksList } from './useBooksList';
@@ -10,13 +10,13 @@ export const BooksList = observer(function BooksList() {
 
   return (
     <section>
-      <Tabs options={vm.filterOptions} value={vm.filter} onChange={vm.setFilter} />
-      <p className={styles.status}>{vm.statusText}</p>
+      <SegmentedControl label="Books filter" options={vm.filterOptions} onChange={vm.setFilter} />
+      <p className={styles.status} role="status">
+        {vm.statusText}
+      </p>
       <ul className={styles.list} aria-busy={vm.isBusy}>
         {vm.books.map((book) => (
-          <li key={book.key}>
-            {book.author}: {book.name}
-          </li>
+          <li key={book.key}>{book.title}</li>
         ))}
       </ul>
     </section>
