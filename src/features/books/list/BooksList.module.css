@@ -6,3 +6,8 @@
   list-style: none;
   padding: 0;
 }
+
+.list[aria-busy='true'] {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}

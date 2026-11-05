@@ -11,10 +11,10 @@ const ALL = [
 ];
 const PRIVATE = [{ name: 'Mine', author: 'Me' }];
 
-const setup = (gateway = fakeGateway({ get: { '/': ALL, '/private': PRIVATE } })) => ({
-  gateway,
-  controller: createBooksListController(createBooksRepository(gateway)),
-});
+const setup = (gateway = fakeGateway({ get: { '/': ALL, '/private': PRIVATE } })) => {
+  const repository = createBooksRepository(gateway);
+  return { gateway, repository, controller: createBooksListController(repository) };
+};
 
 describe('BooksListController', () => {
   it('shows loading status until all books are loaded', async () => {
@@ -58,6 +58,21 @@ describe('BooksListController', () => {
     await controller.setFilter('private');
 
     expect(controller.statusText).toBe('No books yet');
+  });
+
+  it('keeps the current books but marks the list busy while a book is being added', async () => {
+    const { repository, controller } = setup();
+    await controller.init();
+    expect(controller.isBusy).toBe(false);
+
+    const adding = repository.addBook({ name: 'Mine', author: 'Me' });
+    expect(controller.isBusy).toBe(true);
+    expect(controller.statusText).toBe('Updating list…');
+    expect(controller.books).toHaveLength(2);
+
+    await adding;
+    expect(controller.isBusy).toBe(false);
+    expect(controller.statusText).toBe('');
   });
 
   it('shows error status when loading fails', async () => {

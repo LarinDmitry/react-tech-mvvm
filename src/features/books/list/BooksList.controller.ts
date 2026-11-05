@@ -1,6 +1,7 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
+import { createRequestState } from '@/shared/store/createRequestState';
 import type { TabOption } from '@/shared/ui/Tabs';
 
 export type BooksFilter = 'all' | 'private';
@@ -10,9 +11,8 @@ const FILTER_OPTIONS: readonly TabOption<BooksFilter>[] = [
   { value: 'private', label: 'Private books' },
 ];
 
-type Status = 'loading' | 'ready' | 'error';
-
 export const createBooksListController = (booksRepository: BooksRepository) => {
+  const request = createRequestState();
   const loaders = {
     all: booksRepository.loadAllBooks,
     private: booksRepository.loadPrivateBooks,
@@ -22,7 +22,6 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
     {
       filterOptions: FILTER_OPTIONS,
       filter: 'all' as BooksFilter,
-      status: 'loading' as Status,
 
       get books() {
         return controller.filter === 'all'
@@ -30,33 +29,24 @@ export const createBooksListController = (booksRepository: BooksRepository) => {
           : booksRepository.privateBooks;
       },
 
+      get isBusy() {
+        return request.status === 'loading' || booksRepository.isAdding;
+      },
+
       get statusText() {
-        if (controller.status === 'loading') return 'Loading books…';
-        if (controller.status === 'error') return 'Could not load books';
+        if (request.status === 'loading') return 'Loading books…';
+        if (request.status === 'error') return 'Could not load books';
+        if (booksRepository.isAdding) return 'Updating list…';
         return controller.books.length ? '' : 'No books yet';
       },
 
       init() {
-        return controller.load();
+        return request.run(loaders[controller.filter]);
       },
 
       setFilter(filter: BooksFilter) {
         controller.filter = filter;
-        return controller.load();
-      },
-
-      async load() {
-        controller.status = 'loading';
-        try {
-          await loaders[controller.filter]();
-          runInAction(() => {
-            controller.status = 'ready';
-          });
-        } catch {
-          runInAction(() => {
-            controller.status = 'error';
-          });
-        }
+        return request.run(loaders[filter]);
       },
     },
     { filterOptions: false },

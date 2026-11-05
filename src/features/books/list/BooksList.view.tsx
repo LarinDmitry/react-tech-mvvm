@@ -12,7 +12,7 @@ export const BooksList = observer(function BooksList() {
     <section>
       <Tabs options={vm.filterOptions} value={vm.filter} onChange={vm.setFilter} />
       <p className={styles.status}>{vm.statusText}</p>
-      <ul className={styles.list}>
+      <ul className={styles.list} aria-busy={vm.isBusy}>
         {vm.books.map((book) => (
           <li key={book.key}>
             {book.author}: {book.name}

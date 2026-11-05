@@ -17,6 +17,7 @@ export const createBooksRepository = (gateway: HttpGateway) => {
     {
       allBooks: [] as Book[],
       privateBooks: [] as Book[],
+      isAdding: false,
 
       async loadAllBooks() {
         const books = await fetchBooks('/');
@@ -33,18 +34,25 @@ export const createBooksRepository = (gateway: HttpGateway) => {
       },
 
       async addBook({ name, author }: NewBook) {
-        const result = await gateway.post<StatusDto>('/', { name, author });
-        if (result.status !== 'ok') return false;
+        repository.isAdding = true;
+        try {
+          const result = await gateway.post<StatusDto>('/', { name, author });
+          if (result.status !== 'ok') return false;
 
-        const [allBooks, privateBooks] = await Promise.all([
-          fetchBooks('/'),
-          fetchBooks('/private'),
-        ]);
-        runInAction(() => {
-          repository.allBooks = allBooks;
-          repository.privateBooks = privateBooks;
-        });
-        return true;
+          const [allBooks, privateBooks] = await Promise.all([
+            fetchBooks('/'),
+            fetchBooks('/private'),
+          ]);
+          runInAction(() => {
+            repository.allBooks = allBooks;
+            repository.privateBooks = privateBooks;
+          });
+          return true;
+        } finally {
+          runInAction(() => {
+            repository.isAdding = false;
+          });
+        }
       },
     },
     {},

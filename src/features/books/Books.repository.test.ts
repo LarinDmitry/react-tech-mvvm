@@ -63,4 +63,27 @@ describe('BooksRepository', () => {
     await expect(repository.addBook({ name: 'N', author: 'A' })).resolves.toBe(false);
     expect(gateway.get).not.toHaveBeenCalled();
   });
+
+  it('is adding from the POST until both lists are reloaded', async () => {
+    const repository = createBooksRepository(
+      fakeGateway({ get: { '/': ALL, '/private': PRIVATE } }),
+    );
+    expect(repository.isAdding).toBe(false);
+
+    const adding = repository.addBook({ name: 'N', author: 'A' });
+    expect(repository.isAdding).toBe(true);
+
+    await adding;
+    expect(repository.isAdding).toBe(false);
+    expect(repository.allBooks).toHaveLength(2);
+  });
+
+  it('stops adding when the request fails', async () => {
+    const gateway = fakeGateway();
+    gateway.post.mockRejectedValue(new Error('HTTP 500 for /'));
+    const repository = createBooksRepository(gateway);
+
+    await expect(repository.addBook({ name: 'N', author: 'A' })).rejects.toThrow();
+    expect(repository.isAdding).toBe(false);
+  });
 });

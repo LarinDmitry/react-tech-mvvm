@@ -2,17 +2,15 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { BooksRepository } from '@/features/books/Books.repository';
 
-type Status = 'idle' | 'submitting' | 'error';
-
 export const createAddBookController = (booksRepository: BooksRepository) => {
   const controller = makeAutoObservable(
     {
       name: '',
       author: '',
-      status: 'idle' as Status,
+      hasError: false,
 
       get isSubmitting() {
-        return controller.status === 'submitting';
+        return booksRepository.isAdding;
       },
 
       get isSubmitDisabled() {
@@ -24,7 +22,7 @@ export const createAddBookController = (booksRepository: BooksRepository) => {
       },
 
       get errorText() {
-        return controller.status === 'error' ? 'Could not add the book' : '';
+        return controller.hasError ? 'Could not add the book' : '';
       },
 
       setName(name: string) {
@@ -37,7 +35,7 @@ export const createAddBookController = (booksRepository: BooksRepository) => {
 
       async submit() {
         if (controller.isSubmitDisabled) return;
-        controller.status = 'submitting';
+        controller.hasError = false;
 
         const added = await booksRepository
           .addBook({ name: controller.name.trim(), author: controller.author.trim() })
@@ -45,12 +43,11 @@ export const createAddBookController = (booksRepository: BooksRepository) => {
 
         runInAction(() => {
           if (!added) {
-            controller.status = 'error';
+            controller.hasError = true;
             return;
           }
           controller.name = '';
           controller.author = '';
-          controller.status = 'idle';
         });
       },
     },
