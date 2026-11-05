@@ -29,6 +29,7 @@ export const createBooksListController = (booksRepository: Omit<BooksRepository,
 
   const controller = makeAutoObservable(
     {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- without it the literal widens to string
       filter: 'all' as BooksFilter,
 
       get filterOptions() {

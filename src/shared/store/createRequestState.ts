@@ -7,6 +7,7 @@ export const createRequestState = () => {
 
   const state = makeAutoObservable(
     {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- without it the literal widens to string
       status: 'loading' as RequestStatus,
       isLoaded: false,
 
