@@ -59,20 +59,18 @@ describe('BooksRepository', () => {
     const gateway = fakeGateway({ get: { '/': ALL, '/private': PRIVATE } });
     const repository = createBooksRepository(gateway);
 
-    await expect(repository.addBook({ name: 'New Book', author: 'New Author' })).resolves.toBe(
-      true,
-    );
+    await repository.addBook({ name: 'New Book', author: 'New Author' });
 
     expect(gateway.post).toHaveBeenCalledWith('/', { name: 'New Book', author: 'New Author' });
     expect(repository.allBooks).toHaveLength(2);
     expect(repository.privateBooks).toHaveLength(1);
   });
 
-  it('reports failure and does not reload when the API does not answer "ok"', async () => {
+  it('throws and does not reload when the API does not answer "ok"', async () => {
     const gateway = fakeGateway({ post: { status: 'error' } });
     const repository = createBooksRepository(gateway);
 
-    await expect(repository.addBook({ name: 'N', author: 'A' })).resolves.toBe(false);
+    await expect(repository.addBook({ name: 'N', author: 'A' })).rejects.toThrow();
     expect(gateway.get).not.toHaveBeenCalled();
   });
 

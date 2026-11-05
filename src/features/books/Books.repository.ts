@@ -44,11 +44,10 @@ export const createBooksRepository = (gateway: HttpGateway) => {
         repository.isAdding = true;
         try {
           const result = await gateway.post<StatusDto>('/', { name, author });
-          if (result.status !== 'ok') return false;
+          if (result.status !== 'ok') throw new Error(`Book was not added: ${result.status}`);
 
           // book is already saved here, so if the reload fails it's a list error, not an add error
           await Promise.all([repository.loadAllBooks(), repository.loadPrivateBooks()]);
-          return true;
         } finally {
           runInAction(() => {
             repository.isAdding = false;

@@ -79,6 +79,42 @@ describe('AddBookController', () => {
     expect(gateway.post).not.toHaveBeenCalled();
   });
 
+  it('clears the error once a retry succeeds', async () => {
+    const { gateway, controller } = setup();
+    gateway.post.mockRejectedValueOnce(new Error('HTTP 500 for /'));
+    fillForm(controller);
+    await controller.submit();
+    expect(controller.errorText).toBe('Could not add the book');
+
+    await controller.submit();
+
+    expect(controller.errorText).toBe('');
+    expect(controller.name).toBe('');
+  });
+
+  it('clears the error when a field is edited', async () => {
+    const { gateway, controller } = setup();
+    gateway.post.mockRejectedValueOnce(new Error('HTTP 500 for /'));
+    fillForm(controller);
+    await controller.submit();
+
+    controller.setName('Dune Messiah');
+
+    expect(controller.errorText).toBe('');
+  });
+
+  it('ignores a second submit while the first one is in flight', async () => {
+    const { gateway, controller } = setup();
+    fillForm(controller);
+
+    const first = controller.submit();
+    expect(controller.isSubmitting).toBe(true);
+    await controller.submit();
+    await first;
+
+    expect(gateway.post).toHaveBeenCalledTimes(1);
+  });
+
   it('treats the book as added when only the reload after POST fails', async () => {
     const { gateway, controller } = setup();
     gateway.get.mockRejectedValue(new Error('HTTP 502 for /'));

@@ -29,28 +29,32 @@ export const createAddBookController = (
 
       setName(name: string) {
         controller.name = name;
+        controller.hasError = false;
       },
 
       setAuthor(author: string) {
         controller.author = author;
+        controller.hasError = false;
       },
 
       async submit() {
         if (controller.isSubmitDisabled) return;
         controller.hasError = false;
 
-        const added = await booksRepository
-          .addBook({ name: controller.name.trim(), author: controller.author.trim() })
-          .catch(() => false);
-
-        runInAction(() => {
-          if (!added) {
+        try {
+          await booksRepository.addBook({
+            name: controller.name.trim(),
+            author: controller.author.trim(),
+          });
+          runInAction(() => {
+            controller.name = '';
+            controller.author = '';
+          });
+        } catch {
+          runInAction(() => {
             controller.hasError = true;
-            return;
-          }
-          controller.name = '';
-          controller.author = '';
-        });
+          });
+        }
       },
     },
     {},

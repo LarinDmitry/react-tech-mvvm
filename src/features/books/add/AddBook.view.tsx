@@ -11,12 +11,19 @@ export const AddBook = observer(function AddBook() {
 
   return (
     <Form className={styles.form} onSubmit={vm.submit}>
-      <TextField label="Name" value={vm.name} onChange={vm.setName} />
-      <TextField label="Author" value={vm.author} onChange={vm.setAuthor} />
+      <TextField label="Name" value={vm.name} disabled={vm.isSubmitting} onChange={vm.setName} />
+      <TextField
+        label="Author"
+        value={vm.author}
+        disabled={vm.isSubmitting}
+        onChange={vm.setAuthor}
+      />
       <button className={styles.submit} type="submit" disabled={vm.isSubmitDisabled}>
         {vm.submitText}
       </button>
-      <p className={styles.error}>{vm.errorText}</p>
+      <p className={styles.error} role="alert">
+        {vm.errorText}
+      </p>
     </Form>
   );
 });
