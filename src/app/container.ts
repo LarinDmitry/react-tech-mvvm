@@ -1,10 +1,10 @@
 import { createContext, use } from 'react';
 
 import { createBooksRepository } from '@/features/books/Books.repository';
-import { config } from '@/shared/config';
+import { getApiBase } from '@/shared/config';
 import { createHttpGateway, type HttpGateway } from '@/shared/gateway/HttpGateway';
 
-export const createContainer = (gateway: HttpGateway = createHttpGateway(config.apiBase)) => ({
+export const createContainer = (gateway: HttpGateway = createHttpGateway(getApiBase())) => ({
   booksRepository: createBooksRepository(gateway),
 });
 
